@@ -28,7 +28,7 @@ jobs:
       - name: Package Lambda
         run: |
           cd lambda
-          zip -r lambda.zip .
+          zip -r lambda_code.zip .
       
       - name: Update Lambda function
         run: |
@@ -39,6 +39,5 @@ jobs:
       # ---- Deploy Glue script ----
       - name: Upload Glue script to S3
         run: |
-          aws s3 cp glue/batch_etl.py \
+          aws s3 cp glue/glue_code.py \
             s3://${{ secrets.GLUE_SCRIPT_BUCKET }}/${{ secrets.GLUE_SCRIPT_KEY }}
-
