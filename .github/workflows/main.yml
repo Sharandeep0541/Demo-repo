@@ -1,1 +1,44 @@
+name: Deploy Lambda & Glue
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+
+
+      # ---- Deploy Lambda ----
+      - name: Package Lambda
+        run: |
+          cd lambda
+          zip -r lambda.zip .
+      
+      - name: Update Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --zip-file fileb://lambda/lambda.zip
+
+      # ---- Deploy Glue script ----
+      - name: Upload Glue script to S3
+        run: |
+          aws s3 cp glue/batch_etl.py \
+            s3://${{ secrets.GLUE_SCRIPT_BUCKET }}/${{ secrets.GLUE_SCRIPT_KEY }}
 
